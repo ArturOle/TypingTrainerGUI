@@ -1,3 +1,3 @@
-# TypingTrainerGUI
+# TypingTrainerGUI WIP
 
 #Python #wxpython #wxwidgets 
