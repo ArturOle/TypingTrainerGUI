@@ -1,5 +1,6 @@
-import wx
 from random import randint
+import pandas as pd
+import wx
 
 
 class MainPanel(wx.Panel):
@@ -14,7 +15,8 @@ class MainPanel(wx.Panel):
         self.SetBackgroundColour(wx.WHITE)
         sizer_vertical = wx.BoxSizer(wx.VERTICAL)
         logo = wx.Image("logo.bmp", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        logo_bit = wx.StaticBitmap(self, -1, logo, size=(logo.GetWidth(), logo.GetHeight()))
+        logo_bit = wx.StaticBitmap(self, -1, logo,
+                                   size=(logo.GetWidth(), logo.GetHeight()))
         sizer_vertical.Add(logo_bit, 0, wx.ALIGN_CENTER, 0)
 
         play_button = wx.Button(self, 0, "Play")
@@ -55,10 +57,18 @@ class PlayPanel(wx.Panel):
         self.Bind(wx.EVT_TIMER, self.timer_method, self.timer)
 
         font = wx.Font()
-        font.SetPointSize(100)
 
         self.sizer_vertical.AddSpacer(40)
 
+        font.SetPointSize(30)
+        self.info_text = wx.StaticText(self,
+                                       label="Prepare for typing!",
+                                       style=wx.ALIGN_CENTER,
+                                       size=(wx.Size.GetWidth(self.Size), 100))
+        self.info_text.SetFont(font)
+        self.sizer_vertical.Add(self.info_text, 0, wx.CENTER, 0)
+
+        font.SetPointSize(100)
         self.counter_text = wx.StaticText(self,
                                           style=wx.ALIGN_CENTER,
                                           size=(wx.Size.GetWidth(self.Size), 100))
@@ -74,11 +84,11 @@ class PlayPanel(wx.Panel):
     def timer_method(self, event):
         if self.time_remaining < 0:
             self.timer_off()
-            self.clean()  # Zrobić jeszcze raz
+            self.clean()
             self.game(5)
         else:
-            text = str(self.time_remaining)
-            self.counter_text.SetLabel(label=text)
+            counter_text = str(self.time_remaining)
+            self.counter_text.SetLabel(label=counter_text)
             self.Update()
             self.time_remaining -= 1
 
@@ -109,10 +119,12 @@ class PlayPanel(wx.Panel):
             txt_info.SetForegroundColour(wx.Colour(240, 240, 240, 0))
             sizer_vertical.Add(txt_info, 0, wx.CENTER, 0)
 
+            font.SetPointSize(20)
+            font.MakeBold()
             round_line = self.get_random_line()
             round_text = wx.StaticText(self,
                                        label=''.join(("Repeat:\n", round_line)),
-                                       size=(wx.Size.GetWidth(self.Size), 45),
+                                       size=(wx.Size.GetWidth(self.Size), 60),
                                        style=wx.ALIGN_CENTER_HORIZONTAL)
             round_text.SetFont(font)
             round_text.SetBackgroundColour(wx.Colour(200, 200, 200, 0))
@@ -161,6 +173,15 @@ class OptionsPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.parent = parent
+        self._init_ui()
+
+    def _init_ui(self):
+        self.get_specs()
+
+    def get_specs(self):
+        df = pd.read_json("options.json")
+        value = (df.iat[1, 1])
+        print(value)
 
 
 class Frame(wx.Frame):
