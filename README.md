@@ -4,7 +4,7 @@ My first GUI project and program.
 
 #Python #wxpython #wxwidgets 
 
-## Progress changelog:
+## Progress diary:
 
 ### -27.04.2020
     Project started
