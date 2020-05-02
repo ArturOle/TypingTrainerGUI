@@ -4,6 +4,18 @@ My first GUI project and program.
 
 #Python #wxpython #wxwidgets 
 
+## Requirements:
+
+    -Python 3.8
+    -wxPython
+    -pandas
+    
+## How to start
+
+    1. Run .py file.
+    2. Click any button depending on your need.
+    3. Try to follow along instructions on the screen 
+
 ## Progress diary:
 
 ### -27.04.2020
