@@ -36,3 +36,7 @@ My first GUI project and program.
     PlayPanel WorkInProgress
     MainPanel class is done
     Frame clase is done
+    
+### -06.05.2020
+    Scaling and cleaning code
+    OptionPanel debugging
