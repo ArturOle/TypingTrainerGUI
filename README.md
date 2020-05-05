@@ -1,5 +1,7 @@
 # TypingTrainerGUI WIP
 
+For now gaming part of the code is not working, in development.
+
 My first GUI project and program.
 
 #Python #wxpython #wxwidgets 
