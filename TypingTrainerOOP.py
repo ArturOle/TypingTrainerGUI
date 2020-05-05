@@ -14,6 +14,7 @@ class MainPanel(wx.Panel):
     def _init_ui(self):
         self.SetBackgroundColour(wx.WHITE)
         sizer_vertical = wx.BoxSizer(wx.VERTICAL)
+
         logo = wx.Image("logo.bmp", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         logo_bit = wx.StaticBitmap(self, -1, logo,
                                    size=(logo.GetWidth(), logo.GetHeight()))
@@ -56,9 +57,9 @@ class PlayPanel(wx.Panel):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.timer_method, self.timer)
 
-        font = wx.Font()
-
         self.sizer_vertical.AddSpacer(40)
+
+        font = wx.Font()
 
         font.SetPointSize(30)
         self.info_text = wx.StaticText(self,
@@ -85,11 +86,10 @@ class PlayPanel(wx.Panel):
         if self.time_remaining < 0:
             self.timer_off()
             self.clean()
-            self.game(self.parent.option_panel.get_specs()["Value"][1])
+            self.game()
         else:
             counter_text = str(self.time_remaining)
             self.counter_text.SetLabel(label=counter_text)
-            self.Update()
             self.time_remaining -= 1
 
     def clean(self):
@@ -102,7 +102,8 @@ class PlayPanel(wx.Panel):
     def timer_off(self):
         self.timer.Stop()
 
-    def game(self, nr_of_rounds):
+    def game(self):
+        nr_of_rounds = self.parent.option_panel.get_specs()["Value"][1]
         while nr_of_rounds > 0:
             self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
             sizer_vertical = wx.BoxSizer(wx.VERTICAL)
@@ -147,9 +148,10 @@ class PlayPanel(wx.Panel):
             nr_of_rounds -= 1
 
     def get_random_line(self):
+        level = self.parent.option_panel.get_specs()["Value"][2]
         index = randint(0, self.get_volume())
         try:
-            with open("storageM.csv", "r") as file:
+            with open(level, "r") as file:
                 for i, line in enumerate(file):
                     if index == i:
                         line = line.split(';')
@@ -205,7 +207,9 @@ class OptionsPanel(wx.Panel):
         sizer_vertical.AddSpacer(40)
         sizer_vertical.Add(self.box_text, 0, wx.CENTER, 0)
 
-        self.level_box = wx.ComboBox(self, choices=("Medium", "High"), style=wx.CB_READONLY)
+        self.level_box = wx.ComboBox(self,
+                                     choices=("Medium", "High"),
+                                     style=wx.CB_READONLY)
         self.level_box.SetValue(specs["Value"][0])
         sizer_vertical.AddSpacer(10)
         sizer_vertical.Add(self.level_box, 0, wx.CENTER, 0)
@@ -214,10 +218,12 @@ class OptionsPanel(wx.Panel):
         sizer_vertical.AddSpacer(30)
         sizer_vertical.Add(self.path_text, 0, wx.CENTER, 0)
 
-        self.path_control = wx.TextCtrl(self, size=(wx.Size.GetWidth(self.Size), 20))
-        self.path_control.SetValue(specs["Value"][2])
+        self.path = wx.StaticText(self,
+                                  size=(wx.Size.GetWidth(self.Size), 20),
+                                  style=wx.ALIGN_CENTER_HORIZONTAL)
+        self.path.Label = specs["Value"][2]
         sizer_vertical.AddSpacer(10)
-        sizer_vertical.Add(self.path_control, 0, wx.CENTER, 0)
+        sizer_vertical.Add(self.path, 0, wx.CENTER, 0)
 
         save_button = wx.Button(self, label="Save Changes")
         save_button.Bind(wx.EVT_BUTTON, self._overwrite_specs)
@@ -242,10 +248,14 @@ class OptionsPanel(wx.Panel):
     def _overwrite_specs(self, event):
         value_level = self.level_box.GetValue()
         value_rounds = self.rounds_slider.GetValue()
-        value_patch = "storageM.csv"
+
+        if self.get_specs()["Value"][0][0] == "M":
+            value_patch = "storageM.csv"
+        else:
+            value_patch = "storageH.csv"
+
         print("Option 1 changed to ", value_rounds)
         df = pd.read_json("options.json")
-        print(df)
         df.iloc[0, 1] = value_level
         df.iloc[1, 1] = value_rounds
         df.iloc[2, 1] = value_patch
