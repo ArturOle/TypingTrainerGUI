@@ -85,7 +85,7 @@ class PlayPanel(wx.Panel):
         if self.time_remaining < 0:
             self.timer_off()
             self.clean()
-            self.game(5)
+            self.game(self.parent.option_panel.get_specs()["Value"][1])
         else:
             counter_text = str(self.time_remaining)
             self.counter_text.SetLabel(label=counter_text)
@@ -117,7 +117,7 @@ class PlayPanel(wx.Panel):
                                      style=wx.ALIGN_CENTER_HORIZONTAL)
             txt_info.SetFont(font)
             txt_info.SetForegroundColour(wx.Colour(240, 240, 240, 0))
-            sizer_vertical.Add(txt_info, 0, wx.CENTER, 0)
+            sizer_vertical.Add(txt_info, 0, wx.CENTER | wx.EXPAND, 0)
 
             font.SetPointSize(20)
             font.MakeBold()
@@ -128,15 +128,19 @@ class PlayPanel(wx.Panel):
                                        style=wx.ALIGN_CENTER_HORIZONTAL)
             round_text.SetFont(font)
             round_text.SetBackgroundColour(wx.Colour(200, 200, 200, 0))
-            sizer_vertical.Add(round_text, 0, wx.CENTER, 0)
+            sizer_vertical.Add(round_text, 0, wx.CENTER | wx.EXPAND, 0)
 
-            sizer_vertical.Add((0, 10), 0, wx.CENTER, 0)
+            sizer_vertical.AddSpacer(10)
+            txt_boxinfo = wx.StaticText(self,
+                                        label="Type here!",
+                                        style=wx.ALIGN_CENTER_HORIZONTAL)
+            sizer_vertical.Add(txt_boxinfo, 0, wx.CENTER | wx.EXPAND, 0)
 
             txt_box = wx.TextCtrl(self, size=(wx.Size.GetWidth(self.Size), 20))
             txt_box.SetBackgroundColour(wx.Colour(200, 200, 200, 0))
-            sizer_horizontal.Add(txt_box, 1, wx.EXPAND, 1)
+            sizer_horizontal.Add(txt_box, 1, wx.CENTER | wx.EXPAND, 1)
 
-            sizer_vertical.Add(sizer_horizontal, 0, wx.CENTER, 0)
+            sizer_vertical.Add(sizer_horizontal, 0, wx.CENTER | wx.EXPAND, 0)
             sizer_vertical.AddSpacer(100)
             self.SetSizer(sizer_vertical)
             self.Layout()
@@ -182,7 +186,7 @@ class OptionsPanel(wx.Panel):
         sizer_vertical = wx.BoxSizer(wx.VERTICAL)
         sizer_horizontal = wx.BoxSizer(wx.HORIZONTAL)
 
-        specs = self._get_specs()
+        specs = self.get_specs()
 
         sizer_vertical.AddSpacer(20)
         sizer_horizontal.Add(wx.StaticText(self, label="Quantity of rounds"))
@@ -220,7 +224,7 @@ class OptionsPanel(wx.Panel):
         sizer_vertical.AddSpacer(100)
         sizer_vertical.Add(save_button, 0, wx.CENTER | wx.BOTTOM, 0)
 
-        specs = self._get_specs()
+        specs = self.get_specs()
         print(specs["Option"][1])
         print(specs["Value"][1])
 
@@ -230,7 +234,7 @@ class OptionsPanel(wx.Panel):
         self.Layout()
 
     @staticmethod
-    def _get_specs():
+    def get_specs():
         df = pd.read_json("options.json")
         dictionary = df.to_dict()
         return dictionary
@@ -245,6 +249,7 @@ class OptionsPanel(wx.Panel):
         df.iloc[0, 1] = value_level
         df.iloc[1, 1] = value_rounds
         df.iloc[2, 1] = value_patch
+        print("Current state: \n", df)
         df.to_json("options.json")
         self.parent.switch_panel(self.parent.option_panel, self.parent.main_panel)
 
