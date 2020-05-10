@@ -1,5 +1,6 @@
 from random import randint
 import pandas as pd
+import time
 import wx
 
 
@@ -35,8 +36,8 @@ class MainPanel(wx.Panel):
         self.SetSizerAndFit(sizer_vertical)
 
     def change_to_play(self, event):
-        self.parent.switch_panel(self.parent.main_panel, self.parent.play_panel)
-        self.parent.play_panel.timer_on()
+        self.parent.switch_panel(self.parent.main_panel, self.parent.timer_panel)
+        self.parent.timer_panel.timer_on()
 
     def change_to_options(self, event):
         self.parent.switch_panel(self.parent.main_panel, self.parent.option_panel)
@@ -46,6 +47,96 @@ class MainPanel(wx.Panel):
 
 
 class PlayPanel(wx.Panel):
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+        self.SetSize((640, 420))
+        self.parent = parent
+        self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
+        self.sizer_vertical = wx.BoxSizer(wx.VERTICAL)
+
+    def game(self):
+        nr_of_rounds = self.parent.option_panel.get_specs()["Value"][1]
+        start_time = time.time()  # dokończ kurwa
+        while nr_of_rounds > 0:
+            self.round()
+            nr_of_rounds -= 1
+        end_time = time.time()
+        print(end_time - start_time)
+
+    def round(self):
+        self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
+        sizer_vertical = wx.BoxSizer(wx.VERTICAL)
+        sizer_horizontal = wx.BoxSizer(wx.HORIZONTAL)
+
+        font = wx.Font()
+        font.SetFamily(wx.FONTFAMILY_MODERN)
+        font.SetPointSize(15)
+
+        txt_info = wx.StaticText(self,
+                                 label="Repeat sentence the fastest you can!",
+                                 style=wx.ALIGN_CENTER_HORIZONTAL)
+        txt_info.SetFont(font)
+        txt_info.SetForegroundColour(wx.Colour(240, 240, 240, 0))
+        sizer_vertical.Add(txt_info, 0, wx.CENTER | wx.EXPAND, 0)
+
+        font.SetPointSize(20)
+        font.MakeBold()
+        round_line = self.get_random_line()
+        round_text = wx.StaticText(self,
+                                   label=''.join(("Repeat:\n", round_line)),
+                                   size=(wx.Size.GetWidth(self.Size), 60),
+                                   style=wx.ALIGN_CENTER_HORIZONTAL)
+        round_text.SetFont(font)
+        round_text.SetBackgroundColour(wx.Colour(200, 200, 200, 0))
+        sizer_vertical.Add(round_text, 0, wx.CENTER | wx.EXPAND, 0)
+
+        sizer_vertical.AddSpacer(10)
+        txt_boxinfo = wx.StaticText(self,
+                                    label="Type here!",
+                                    style=wx.ALIGN_CENTER_HORIZONTAL)
+        sizer_vertical.Add(txt_boxinfo, 0, wx.CENTER | wx.EXPAND, 0)
+
+        txt_box = wx.TextCtrl(self, size=(wx.Size.GetWidth(self.Size), 20))
+        txt_box.SetBackgroundColour(wx.Colour(200, 200, 200, 0))
+        sizer_horizontal.Add(txt_box, 1, wx.CENTER | wx.EXPAND, 1)
+        sizer_vertical.Add(sizer_horizontal, 0, wx.CENTER | wx.EXPAND, 0)
+
+        next_button = wx.Button(self, label="next")
+        sizer_vertical.Add(next_button, 0, wx.CENTER, 0)
+
+        sizer_vertical.AddSpacer(100)
+        self.SetSizer(sizer_vertical)
+        self.Layout()
+
+    def get_random_line(self):
+        level = self.parent.option_panel.get_specs()["Value"][2]
+        index = randint(0, self.get_volume(level))
+        try:
+            with open(level, "r") as file:
+                for i, line in enumerate(file):
+                    if index == i:
+                        line = line.split(';')
+                        return line[1]
+        except FileNotFoundError:
+            wx.MessageBox("ERROR!\nCannot find storage file",
+                          "Error", wx.OK | wx.ICON_ERROR)
+            self.parent.Close()
+
+    def get_volume(self, level_path):
+        try:
+            with open(level_path, "r") as file:
+                volume = 0
+                for line in file:
+                    volume += 1
+
+            return volume
+        except FileNotFoundError:
+            wx.MessageBox("ERROR!\nCannot find storage file",
+                          "Error", wx.OK | wx.ICON_ERROR)
+            self.parent.Close()
+
+
+class TimerPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.SetSize((640, 420))
@@ -86,7 +177,8 @@ class PlayPanel(wx.Panel):
         if self.time_remaining < 0:
             self.timer_off()
             self.clean()
-            self.game()
+            self.parent.switch_panel(self, self.parent.play_panel)
+            self.parent.play_panel.game()
         else:
             counter_text = str(self.time_remaining)
             self.counter_text.SetLabel(label=counter_text)
@@ -101,78 +193,6 @@ class PlayPanel(wx.Panel):
 
     def timer_off(self):
         self.timer.Stop()
-
-    def game(self):
-        nr_of_rounds = self.parent.option_panel.get_specs()["Value"][1]
-        while nr_of_rounds > 0:
-            self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
-            sizer_vertical = wx.BoxSizer(wx.VERTICAL)
-            sizer_horizontal = wx.BoxSizer(wx.HORIZONTAL)
-
-            font = wx.Font()
-            font.SetFamily(wx.FONTFAMILY_MODERN)
-            font.SetPointSize(15)
-
-            txt_info = wx.StaticText(self,
-                                     label="Repeat sentence the fastest you can!",
-                                     style=wx.ALIGN_CENTER_HORIZONTAL)
-            txt_info.SetFont(font)
-            txt_info.SetForegroundColour(wx.Colour(240, 240, 240, 0))
-            sizer_vertical.Add(txt_info, 0, wx.CENTER | wx.EXPAND, 0)
-
-            font.SetPointSize(20)
-            font.MakeBold()
-            round_line = self.get_random_line()
-            round_text = wx.StaticText(self,
-                                       label=''.join(("Repeat:\n", round_line)),
-                                       size=(wx.Size.GetWidth(self.Size), 60),
-                                       style=wx.ALIGN_CENTER_HORIZONTAL)
-            round_text.SetFont(font)
-            round_text.SetBackgroundColour(wx.Colour(200, 200, 200, 0))
-            sizer_vertical.Add(round_text, 0, wx.CENTER | wx.EXPAND, 0)
-
-            sizer_vertical.AddSpacer(10)
-            txt_boxinfo = wx.StaticText(self,
-                                        label="Type here!",
-                                        style=wx.ALIGN_CENTER_HORIZONTAL)
-            sizer_vertical.Add(txt_boxinfo, 0, wx.CENTER | wx.EXPAND, 0)
-
-            txt_box = wx.TextCtrl(self, size=(wx.Size.GetWidth(self.Size), 20))
-            txt_box.SetBackgroundColour(wx.Colour(200, 200, 200, 0))
-            sizer_horizontal.Add(txt_box, 1, wx.CENTER | wx.EXPAND, 1)
-
-            sizer_vertical.Add(sizer_horizontal, 0, wx.CENTER | wx.EXPAND, 0)
-            sizer_vertical.AddSpacer(100)
-            self.SetSizer(sizer_vertical)
-            self.Layout()
-            nr_of_rounds -= 1
-
-    def get_random_line(self):
-        level = self.parent.option_panel.get_specs()["Value"][2]
-        index = randint(0, self.get_volume())
-        try:
-            with open(level, "r") as file:
-                for i, line in enumerate(file):
-                    if index == i:
-                        line = line.split(';')
-                        return line[1]
-        except FileNotFoundError:
-            wx.MessageBox("ERROR!\nCannot find storage file",
-                          "Error", wx.OK | wx.ICON_ERROR)
-            self.parent.Close()
-
-    def get_volume(self):
-        try:
-            with open("storageM.csv", "r") as file:
-                volume = 0
-                for line in file:
-                    volume += 1
-
-            return volume
-        except FileNotFoundError:
-            wx.MessageBox("ERROR!\nCannot find storage file",
-                          "Error", wx.OK | wx.ICON_ERROR)
-            self.parent.Close()
 
 
 class OptionsPanel(wx.Panel):
@@ -276,14 +296,18 @@ class Frame(wx.Frame):
         self.width, self.height = wx.Window.GetClientSize(self)
         self.main_panel = MainPanel(self)
 
-        self.play_panel = PlayPanel(self)
-        self.play_panel.Hide()
+        self.timer_panel = TimerPanel(self)
+        self.timer_panel.Hide()
 
         self.option_panel = OptionsPanel(self)
         self.option_panel.Hide()
 
+        self.play_panel = PlayPanel(self)
+        self.play_panel.Hide()
+
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.main_panel, 1, wx.EXPAND, 1)
+        self.sizer.Add(self.timer_panel, 1, wx.EXPAND, 1)
         self.sizer.Add(self.play_panel, 1, wx.EXPAND, 1)
         self.sizer.Add(self.option_panel, 1, wx.EXPAND, 1)
 
