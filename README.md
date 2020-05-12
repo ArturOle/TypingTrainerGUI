@@ -46,3 +46,9 @@ My first GUI project and program.
     TimerPanel is Done
     FramePanel modifications
     PlayPanel WIP
+    ToDo:
+        -Getting and analyzing user answer
+        -EndingPanel with score
+        -HighscoresPanel
+        -AnalyzePanel
+        -HighLevel Storage
