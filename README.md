@@ -40,3 +40,9 @@ My first GUI project and program.
 ### -06.05.2020
     Scaling and cleaning code
     OptionPanel debugging
+
+### -12.05.2020
+    RoundPanel is Created
+    TimerPanel is Done
+    FramePanel modifications
+    PlayPanel WIP
