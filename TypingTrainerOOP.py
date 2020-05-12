@@ -49,21 +49,33 @@ class MainPanel(wx.Panel):
 class PlayPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent=parent)
+        self.parent = parent
+        self.current_round = 0
+
+    def game(self):
+        if self.current_round < self.parent.specs[1]:
+            self.parent.switch_panel(self, self.parent.round_panels[self.current_round])
+            self.parent.round_panels[self.current_round].round()
+        else:
+            self.parent.main_panel.Show()
+            self.current_round = 0
+
+    def next(self):
+        self.current_round += 1
+        self.game()
+
+
+class RoundPanel(wx.Panel):
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+        self.Hide()
         self.SetSize((640, 420))
         self.parent = parent
         self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
         self.sizer_vertical = wx.BoxSizer(wx.VERTICAL)
 
-    def game(self):
-        nr_of_rounds = self.parent.option_panel.get_specs()["Value"][1]
-        start_time = time.time()  # dokończ kurwa
-        while nr_of_rounds > 0:
-            self.round()
-            nr_of_rounds -= 1
-        end_time = time.time()
-        print(end_time - start_time)
-
     def round(self):
+        self.Show()
         self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
         sizer_vertical = wx.BoxSizer(wx.VERTICAL)
         sizer_horizontal = wx.BoxSizer(wx.HORIZONTAL)
@@ -101,15 +113,21 @@ class PlayPanel(wx.Panel):
         sizer_horizontal.Add(txt_box, 1, wx.CENTER | wx.EXPAND, 1)
         sizer_vertical.Add(sizer_horizontal, 0, wx.CENTER | wx.EXPAND, 0)
 
+        sizer_vertical.AddSpacer(40)
         next_button = wx.Button(self, label="next")
         sizer_vertical.Add(next_button, 0, wx.CENTER, 0)
+        next_button.Bind(wx.EVT_BUTTON, self.next_button_on)
 
         sizer_vertical.AddSpacer(100)
         self.SetSizer(sizer_vertical)
         self.Layout()
 
+    def next_button_on(self, event):
+        self.Hide()
+        self.parent.play_panel.next()
+
     def get_random_line(self):
-        level = self.parent.option_panel.get_specs()["Value"][2]
+        level = self.parent.specs[2]
         index = randint(0, self.get_volume(level))
         try:
             with open(level, "r") as file:
@@ -144,7 +162,7 @@ class TimerPanel(wx.Panel):
         self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
         self.sizer_vertical = wx.BoxSizer(wx.VERTICAL)
 
-        self.time_remaining = 5
+        self.time_remaining = 3
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.timer_method, self.timer)
 
@@ -175,18 +193,14 @@ class TimerPanel(wx.Panel):
 
     def timer_method(self, event):
         if self.time_remaining < 0:
+            self.time_remaining = 3
             self.timer_off()
-            self.clean()
             self.parent.switch_panel(self, self.parent.play_panel)
             self.parent.play_panel.game()
         else:
             counter_text = str(self.time_remaining)
             self.counter_text.SetLabel(label=counter_text)
             self.time_remaining -= 1
-
-    def clean(self):
-        for child in self.GetChildren():
-            child.Destroy()
 
     def timer_on(self):
         self.timer.Start(1000)
@@ -265,6 +279,9 @@ class OptionsPanel(wx.Panel):
         dictionary = df.to_dict()
         return dictionary
 
+    def update_everywere(self):
+        self.parent.specs = self.get_specs()
+
     def _overwrite_specs(self, event):
         value_level = self.level_box.GetValue()
         value_rounds = self.rounds_slider.GetValue()
@@ -278,7 +295,6 @@ class OptionsPanel(wx.Panel):
         df = pd.read_json("options.json")
         df.iloc[0, 1] = value_level
         df.iloc[1, 1] = value_rounds
-        df.iloc[2, 1] = value_patch
         print("Current state: \n", df)
         df.to_json("options.json")
         self.parent.switch_panel(self.parent.option_panel, self.parent.main_panel)
@@ -302,6 +318,10 @@ class Frame(wx.Frame):
         self.option_panel = OptionsPanel(self)
         self.option_panel.Hide()
 
+        self.specs = self.option_panel.get_specs()["Value"]
+
+        self.round_panels = self.generate_rounds()
+
         self.play_panel = PlayPanel(self)
         self.play_panel.Hide()
 
@@ -310,6 +330,7 @@ class Frame(wx.Frame):
         self.sizer.Add(self.timer_panel, 1, wx.EXPAND, 1)
         self.sizer.Add(self.play_panel, 1, wx.EXPAND, 1)
         self.sizer.Add(self.option_panel, 1, wx.EXPAND, 1)
+        self.sizer.AddMany(([panel, 1, wx.EXPAND, 1] for panel in self.round_panels))
 
         self.SetSizer(self.sizer)
 
@@ -318,6 +339,10 @@ class Frame(wx.Frame):
         if from_panel.IsShown():
             from_panel.Hide()
             to_panel.Show()
+
+    def generate_rounds(self):
+        rounds = [RoundPanel(self) for panel in range(0, self.specs[1])]
+        return rounds
 
 
 def main():
