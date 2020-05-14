@@ -1,5 +1,7 @@
 from random import randint
+from datetime import date
 import pandas as pd
+import numpy as np
 import time
 import wx
 
@@ -51,6 +53,9 @@ class PlayPanel(wx.Panel):
         super().__init__(parent=parent)
         self.parent = parent
         self.current_round = 0
+        self.score = 0
+        self.accuracy = []
+        self.whole_time = []
 
     def game(self):
         if self.current_round < self.parent.specs[1]:
@@ -58,24 +63,52 @@ class PlayPanel(wx.Panel):
             self.parent.round_panels[self.current_round].round()
         else:
             self.parent.main_panel.Show()
+            self.gen_highscore()
             self.current_round = 0
+            self.accuracy = []
+            self.whole_time = []
 
     def next(self):
         self.current_round += 1
         self.game()
+
+    def gen_highscore(self):
+        self.whole_time = sum(self.whole_time)
+        self.accuracy = sum(self.accuracy)/len(self.accuracy)
+        print(self.whole_time)
+        print(self.accuracy)
+        self.score = '{0:.2f}'.format((self.parent.specs[1]
+                                       * 100000
+                                       * (pow(self.accuracy, 2))/self.whole_time))
+        print(self.score)
+        self.to_csv()
+
+    def to_csv(self):
+        data = {"date": str(date.today()),
+                "score": self.score,
+                "time": self.whole_time,
+                "accuracy": self.accuracy}
+
+        df = pd.read_csv("Highscores.csv")
+        df = df.append(data, ignore_index=True)
+        df.to_csv("Highscores.csv")
 
 
 class RoundPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.Hide()
-        self.SetSize((640, 420))
+        self.SetSize(parent.Size)
         self.parent = parent
-        self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
-        self.sizer_vertical = wx.BoxSizer(wx.VERTICAL)
+        self.round_line = 0
+        self.user_line = 0
+        self.accuracy = 0
+        self.time_start = 0
+        self.time_end = 0
 
     def round(self):
         self.Show()
+        self.time_start = time.time()
         self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
         sizer_vertical = wx.BoxSizer(wx.VERTICAL)
         sizer_horizontal = wx.BoxSizer(wx.HORIZONTAL)
@@ -93,9 +126,9 @@ class RoundPanel(wx.Panel):
 
         font.SetPointSize(20)
         font.MakeBold()
-        round_line = self.get_random_line()
+        self.round_line = self.get_random_line()
         round_text = wx.StaticText(self,
-                                   label=''.join(("Repeat:\n", round_line)),
+                                   label=''.join(("Repeat:\n", self.round_line)),
                                    size=(wx.Size.GetWidth(self.Size), 60),
                                    style=wx.ALIGN_CENTER_HORIZONTAL)
         round_text.SetFont(font)
@@ -108,21 +141,65 @@ class RoundPanel(wx.Panel):
                                     style=wx.ALIGN_CENTER_HORIZONTAL)
         sizer_vertical.Add(txt_boxinfo, 0, wx.CENTER | wx.EXPAND, 0)
 
-        txt_box = wx.TextCtrl(self, size=(wx.Size.GetWidth(self.Size), 20))
-        txt_box.SetBackgroundColour(wx.Colour(200, 200, 200, 0))
-        sizer_horizontal.Add(txt_box, 1, wx.CENTER | wx.EXPAND, 1)
+        self.txt_box = wx.TextCtrl(self, size=(wx.Size.GetWidth(self.Size), 20))
+        self.txt_box.SetBackgroundColour(wx.Colour(200, 200, 200, 0))
+        sizer_horizontal.Add(self.txt_box, 1, wx.CENTER | wx.EXPAND, 1)
         sizer_vertical.Add(sizer_horizontal, 0, wx.CENTER | wx.EXPAND, 0)
 
         sizer_vertical.AddSpacer(40)
         next_button = wx.Button(self, label="next")
         sizer_vertical.Add(next_button, 0, wx.CENTER, 0)
+        next_button.Bind(wx.EVT_BUTTON, self.compare)
         next_button.Bind(wx.EVT_BUTTON, self.next_button_on)
 
         sizer_vertical.AddSpacer(100)
         self.SetSizer(sizer_vertical)
         self.Layout()
 
+    def compare(self, first, second):
+        self.time_end = time.time()
+        print(first, second)
+        self.parent.play_panel.whole_time.append(self.time_end - self.time_start)
+        score = 0
+        first = [i for i in first]
+        second = [i for i in second]
+        lengfi = len(first)  # length of the first string
+        lengse = len(second)  # length of the second string
+
+        # We need to prevent out of index error by appending blank spaces
+        while lengfi < lengse:
+            first.append(" ")
+            lengfi = len(first)
+
+        while lengse < lengfi:
+            second.append(" ")
+            lengse = len(second)
+
+        for i, j in zip(range(lengfi), range(lengse)):
+            if first[i] == second[j]:
+                score += 1
+            elif i + 1 <= lengse - 1:
+                if first[i + 1] == second[j]:
+                    score += 0.5
+                    i += 1
+            elif i > 0:
+                if first[i - 1] == second[j]:
+                    score += (1 / 3)
+                    i -= 1
+        try:
+            self.accuracy = score / lengfi
+            self.parent.play_panel.accuracy.append(self.accuracy)
+            self.write_score()
+        except ZeroDivisionError:
+            print("No phrase")
+            return -1
+
+    def write_score(self):
+        with open("testing_input.txt", "a") as f:
+            f.write(''.join((str(self.accuracy), "\n")))
+
     def next_button_on(self, event):
+        self.compare(self.round_line, self.txt_box.GetValue())
         self.Hide()
         self.parent.play_panel.next()
 
@@ -155,9 +232,21 @@ class RoundPanel(wx.Panel):
 
 
 class TimerPanel(wx.Panel):
+    """
+    Timer
+
+    Creates transitional screen between MainPanel and PlayPanel
+    with counter.
+
+    timer_method - responsible for functionalities of the counter
+
+    timer_on - starts counter
+
+    timer_off - stops counter
+    """
     def __init__(self, parent):
         super().__init__(parent=parent)
-        self.SetSize((640, 420))
+        self.SetSize((640, 480))
         self.parent = parent
         self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
         self.sizer_vertical = wx.BoxSizer(wx.VERTICAL)
@@ -197,6 +286,7 @@ class TimerPanel(wx.Panel):
             self.timer_off()
             self.parent.switch_panel(self, self.parent.play_panel)
             self.parent.play_panel.game()
+            self.counter_text.SetLabel(label=str(self.time_remaining))
         else:
             counter_text = str(self.time_remaining)
             self.counter_text.SetLabel(label=counter_text)
@@ -210,6 +300,16 @@ class TimerPanel(wx.Panel):
 
 
 class OptionsPanel(wx.Panel):
+    """
+    Options
+
+    In initialization we're creating the screen with all it's components
+    and display informations saved in options.json
+
+    get_specs(static) - responsible for extracting informations from options.json in shape of dictionary
+
+    overwrite_specs(private) - responsible for updating options.json with specifications chosen by the user
+    """
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.SetSize((640, 480))
@@ -279,9 +379,6 @@ class OptionsPanel(wx.Panel):
         dictionary = df.to_dict()
         return dictionary
 
-    def update_everywere(self):
-        self.parent.specs = self.get_specs()
-
     def _overwrite_specs(self, event):
         value_level = self.level_box.GetValue()
         value_rounds = self.rounds_slider.GetValue()
@@ -297,19 +394,43 @@ class OptionsPanel(wx.Panel):
         df.iloc[1, 1] = value_rounds
         print("Current state: \n", df)
         df.to_json("options.json")
+
+        self.parent.specs = self.get_specs()["Value"]
+        self.parent.round_panels = self.parent.generate_rounds()
         self.parent.switch_panel(self.parent.option_panel, self.parent.main_panel)
 
 
+class ResultPanel(wx.Panel):
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+        self.parent = parent
+
+
 class Frame(wx.Frame):
-    """ Initialization of the program
+    """
+    Initialization of the program
 
     We initialize our main frame and all the panels
-    ,also create conditionality of when and which panel
-    should be shown or hide.
+
+    switch_panel(static)- responsible for switching between the panels
+
+    generate_rounds - generates queue of RoundPanels
+                      in quantity given by the user in OptionPanel
+
+    Structure:
+
+                   ===================================================
+                  V                                                  \
+    Frame => MainPanel-(Play) => TimerPanel => PlayPanel => {RoundPanels}
+                  ^   -(Options) => OptionsPanel              ^       |
+                  |   -(Close) => End.     |                  |       |
+                  |                        |                   =======
+                  ==========================
     """
     def __init__(self, parent, title):
         super().__init__(parent=parent, title=title)
         self.width, self.height = wx.Window.GetClientSize(self)
+        self.SetSize((640, 480))
         self.main_panel = MainPanel(self)
 
         self.timer_panel = TimerPanel(self)
