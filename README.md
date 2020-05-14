@@ -1,6 +1,6 @@
 # TypingTrainerGUI WIP
 
-For now gaming part of the code is not working, in development.
+Update, gaming part of the program is now functional!
 
 My first GUI project and program.
 
