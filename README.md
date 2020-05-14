@@ -52,3 +52,14 @@ My first GUI project and program.
         -HighscoresPanel
         -AnalyzePanel
         -HighLevel Storage
+  
+ ### - 14.05.2020
+    PlayPanel is Done
+    RoundPanel scalling
+    FramePanel is Done
+    ToDo:
+        -Getting and analyzing user answer
+        -EndingPanel with score
+        -HighscoresPanel
+        -AnalyzePanel
+        -HighLevel Storage
