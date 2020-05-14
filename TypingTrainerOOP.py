@@ -1,7 +1,6 @@
 from random import randint
 from datetime import date
 import pandas as pd
-import numpy as np
 import time
 import wx
 
