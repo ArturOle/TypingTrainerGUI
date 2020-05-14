@@ -1,6 +1,6 @@
 # TypingTrainerGUI WIP
 
-For now gaming part of the code is not working, in development.
+Update, gaming part of the program is now functional!
 
 My first GUI project and program.
 
@@ -46,6 +46,17 @@ My first GUI project and program.
     TimerPanel is Done
     FramePanel modifications
     PlayPanel WIP
+    ToDo:
+        -Getting and analyzing user answer
+        -EndingPanel with score
+        -HighscoresPanel
+        -AnalyzePanel
+        -HighLevel Storage
+  
+ ### - 14.05.2020
+    PlayPanel is Done
+    RoundPanel scalling
+    FramePanel is Done
     ToDo:
         -Getting and analyzing user answer
         -EndingPanel with score
