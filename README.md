@@ -6,6 +6,8 @@ My first GUI project and program.
 
 #Python #wxpython #wxwidgets 
 
+For now moving to another project, new funtionalities will be added in near future!
+
 ## Requirements:
 
     -Python 3.8
@@ -63,3 +65,7 @@ My first GUI project and program.
         -HighscoresPanel
         -AnalyzePanel
         -HighLevel Storage
+        
+### - 19.05.2020
+    Main functions are Done, making break for another projects.
+    New functionalities like High level or Data analysis will be done in the future. 
