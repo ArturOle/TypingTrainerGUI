@@ -8,8 +8,8 @@ import wx
 class MainPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent=parent)
-        self.height = wx.Window.GetClientSize
         self.parent = parent
+        self.SetClientSize(self.parent.Size)
         self._init_ui()
         self.Centre()
 
@@ -38,6 +38,7 @@ class MainPanel(wx.Panel):
 
     def change_to_play(self, event):
         self.parent.switch_panel(self.parent.main_panel, self.parent.timer_panel)
+        self.parent.timer_panel.SetClientSize(self.parent.Size)
         self.parent.timer_panel.timer_on()
 
     def change_to_options(self, event):
@@ -61,6 +62,7 @@ class PlayPanel(wx.Panel):
             self.parent.switch_panel(self, self.parent.round_panels[self.current_round])
             self.parent.round_panels[self.current_round].round()
         else:
+            self.parent.main_panel.SetClientSize(self.parent.Size)
             self.parent.main_panel.Show()
             self.gen_highscore()
             self.current_round = 0
@@ -83,21 +85,21 @@ class PlayPanel(wx.Panel):
         self.to_csv()
 
     def to_csv(self):
-        data = {"date": str(date.today()),
-                "score": self.score,
-                "time": self.whole_time,
-                "accuracy": self.accuracy}
+        data = {"date": [str(date.today())],
+                "score": [self.score],
+                "time": [self.whole_time],
+                "accuracy": [self.accuracy]}
 
-        df = pd.read_csv("Highscores.csv")
-        df = df.append(data, ignore_index=True)
-        df.to_csv("Highscores.csv")
+        new_data = pd.DataFrame(data)
+        # df = df.append(new_data, ignore_index=True)
+        new_data.to_csv("Highscores.csv", mode='a', header=False)
+        print(pd.read_csv('Highscores.csv'))
 
 
 class RoundPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.Hide()
-        self.SetSize(parent.Size)
         self.parent = parent
         self.round_line = 0
         self.user_line = 0
@@ -107,6 +109,7 @@ class RoundPanel(wx.Panel):
 
     def round(self):
         self.Show()
+        self.SetClientSize(self.parent.Size)
         self.time_start = time.time()
         self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
         sizer_vertical = wx.BoxSizer(wx.VERTICAL)
@@ -245,7 +248,6 @@ class TimerPanel(wx.Panel):
     """
     def __init__(self, parent):
         super().__init__(parent=parent)
-        self.SetSize((640, 480))
         self.parent = parent
         self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
         self.sizer_vertical = wx.BoxSizer(wx.VERTICAL)
@@ -269,7 +271,7 @@ class TimerPanel(wx.Panel):
         font.SetPointSize(100)
         self.counter_text = wx.StaticText(self,
                                           style=wx.ALIGN_CENTER,
-                                          size=(wx.Size.GetWidth(self.Size), 100))
+                                          size=(wx.Size.GetWidth(self.parent.Size), 100))
         self.counter_text.SetFont(font)
         self.sizer_vertical.Add(self.counter_text, 0, wx.CENTER, 0)
 
@@ -314,7 +316,7 @@ class OptionsPanel(wx.Panel):
         self.SetSize((640, 480))
         self.width = self.Size[0]
         self.parent = parent
-        self.SetSize((parent.width, parent.height))
+        self.SetClientSize(self.parent.Size)
 
         self.SetOwnBackgroundColour(wx.Colour(255, 255, 255, 0))
 
@@ -385,7 +387,7 @@ class OptionsPanel(wx.Panel):
         if self.get_specs()["Value"][0][0] == "M":
             value_patch = "storageM.csv"
         else:
-            value_patch = "storageH.csv"
+            value_patch = "storageM.csv"
 
         print("Option 1 changed to ", value_rounds)
         df = pd.read_json("options.json")
@@ -397,12 +399,7 @@ class OptionsPanel(wx.Panel):
         self.parent.specs = self.get_specs()["Value"]
         self.parent.round_panels = self.parent.generate_rounds()
         self.parent.switch_panel(self.parent.option_panel, self.parent.main_panel)
-
-
-class ResultPanel(wx.Panel):
-    def __init__(self, parent):
-        super().__init__(parent=parent)
-        self.parent = parent
+        self.parent.main_panel.SetClientSize(self.parent.Size)
 
 
 class Frame(wx.Frame):
@@ -429,7 +426,7 @@ class Frame(wx.Frame):
     def __init__(self, parent, title):
         super().__init__(parent=parent, title=title)
         self.width, self.height = wx.Window.GetClientSize(self)
-        self.SetSize((640, 480))
+        self.SetInitialSize((640, 480))
         self.main_panel = MainPanel(self)
 
         self.timer_panel = TimerPanel(self)
