@@ -9,6 +9,7 @@ from PlayPanel import *
 from RoundPanel import *
 from TimerPanel import *
 
+
 class Frame(wx.Frame):
     """
     Initialization of the program
