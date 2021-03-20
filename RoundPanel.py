@@ -4,6 +4,7 @@ import pandas as pd
 import time
 import wx
 
+
 class RoundPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent=parent)
@@ -37,30 +38,37 @@ class RoundPanel(wx.Panel):
         font.SetPointSize(20)
         font.MakeBold()
         self.round_line = self.get_random_line()
-        round_text = wx.StaticText(self,
-                                   label=''.join(("Repeat:\n", self.round_line)),
-                                   size=(wx.Size.GetWidth(self.Size), 60),
-                                   style=wx.ALIGN_CENTER_HORIZONTAL)
+        round_text = wx.StaticText(
+            self,
+            label=''.join(("Repeat:\n", self.round_line)),
+            size=(wx.Size.GetWidth(self.Size), 60),
+            style=wx.ALIGN_CENTER_HORIZONTAL
+        )
         round_text.SetFont(font)
         round_text.SetBackgroundColour(wx.Colour(200, 200, 200, 0))
         sizer_vertical.Add(round_text, 0, wx.CENTER | wx.EXPAND, 0)
 
         sizer_vertical.AddSpacer(10)
-        txt_boxinfo = wx.StaticText(self,
-                                    label="Type here!",
-                                    style=wx.ALIGN_CENTER_HORIZONTAL)
+        txt_boxinfo = wx.StaticText(
+            self,
+            label="Type here!",
+            style=wx.ALIGN_CENTER_HORIZONTAL
+        )
         sizer_vertical.Add(txt_boxinfo, 0, wx.CENTER | wx.EXPAND, 0)
 
         self.txt_box = wx.TextCtrl(self, size=(wx.Size.GetWidth(self.Size), 20))
         self.txt_box.SetBackgroundColour(wx.Colour(200, 200, 200, 0))
+        self.txt_box.SetFocus()
         sizer_horizontal.Add(self.txt_box, 1, wx.CENTER | wx.EXPAND, 1)
         sizer_vertical.Add(sizer_horizontal, 0, wx.CENTER | wx.EXPAND, 0)
+        self.txt_box.Bind(wx.EVT_CHAR_HOOK, self.enter_on)
 
         sizer_vertical.AddSpacer(40)
         next_button = wx.Button(self, label="next")
         sizer_vertical.Add(next_button, 0, wx.CENTER, 0)
         next_button.Bind(wx.EVT_BUTTON, self.compare)
         next_button.Bind(wx.EVT_BUTTON, self.next_button_on)
+
 
         sizer_vertical.AddSpacer(100)
         self.SetSizer(sizer_vertical)
@@ -109,9 +117,18 @@ class RoundPanel(wx.Panel):
             f.write(''.join((str(self.accuracy), "\n")))
 
     def next_button_on(self, event):
-        self.compare(self.round_line, self.txt_box.GetValue())
+        self.user_line = self.txt_box.GetValue()
+        self.compare(self.round_line, self.user_line)
         self.Hide()
         self.parent.play_panel.next()
+
+    def enter_on(self, event: wx.EVT_CHAR_HOOK):
+        print(event.GetKeyCode())
+        if event.GetKeyCode() == wx.WXK_RETURN:
+            print("Yep, definitely enter pressed")
+            self.next_button_on(wx.EVT_BUTTON)
+        else:
+            event.Skip()
 
     def get_random_line(self):
         level = self.parent.specs[2]
