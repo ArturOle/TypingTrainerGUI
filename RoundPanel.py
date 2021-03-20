@@ -123,9 +123,7 @@ class RoundPanel(wx.Panel):
         self.parent.play_panel.next()
 
     def enter_on(self, event: wx.EVT_CHAR_HOOK):
-        print(event.GetKeyCode())
         if event.GetKeyCode() == wx.WXK_RETURN:
-            print("Yep, definitely enter pressed")
             self.next_button_on(wx.EVT_BUTTON)
         else:
             event.Skip()

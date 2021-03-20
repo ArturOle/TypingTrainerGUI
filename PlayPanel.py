@@ -4,6 +4,7 @@ import pandas as pd
 import time
 import wx
 
+
 class PlayPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent=parent)
@@ -49,4 +50,5 @@ class PlayPanel(wx.Panel):
         new_data = pd.DataFrame(data)
         # df = df.append(new_data, ignore_index=True)
         new_data.to_csv("Highscores.csv", mode='a', header=False)
+        new_data.sort_values("score", ascending=False)
         print(pd.read_csv('Highscores.csv'))
