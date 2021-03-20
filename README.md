@@ -70,5 +70,14 @@ For now moving to another project, new funtionalities will be added in near futu
     Main functions are Done, making break for another projects.
     New functionalities like High level or Data analysis will be done in the future. 
 
-### -22.01.2021
+### - 22.01.2021
     Refractoring, brake down objects to seperate files.
+    
+### - 20.03.2021
+    Enter works for commiting answers
+    The highscores are sorted
+    Auto focusing on text box for every round ( no need for clicking the box )
+
+
+
+
