@@ -33,12 +33,14 @@ class OptionsPanel(wx.Panel):
         sizer_horizontal.Add(wx.StaticText(self, label="Quantity of rounds"))
         sizer_vertical.Add(sizer_horizontal, 0, wx.CENTER, 0)
 
-        self.rounds_slider = wx.Slider(self,
-                                       value=specs["Value"][1],
-                                       minValue=1,
-                                       maxValue=10,
-                                       style=wx.SL_HORIZONTAL | wx.SL_LABELS,
-                                       size=(self.width-15, 20))
+        self.rounds_slider = wx.Slider(
+            self,
+            value=specs["Value"][1],
+            minValue=1,
+            maxValue=10,
+            style=wx.SL_HORIZONTAL | wx.SL_LABELS,
+            size=(self.width-15, 20)
+        )
         sizer_vertical.Add(self.rounds_slider, flag=wx.CENTER | wx.TOP | wx.EXPAND)
         self.rounds_slider.Bind(wx.EVT_SCROLL, self.Update())
 
@@ -46,9 +48,11 @@ class OptionsPanel(wx.Panel):
         sizer_vertical.AddSpacer(40)
         sizer_vertical.Add(self.box_text, 0, wx.CENTER, 0)
 
-        self.level_box = wx.ComboBox(self,
-                                     choices=("Medium", "High"),
-                                     style=wx.CB_READONLY)
+        self.level_box = wx.ComboBox(
+            self,
+            choices=("Medium", "High"),
+            style=wx.CB_READONLY
+        )
         self.level_box.SetValue(specs["Value"][0])
         sizer_vertical.AddSpacer(10)
         sizer_vertical.Add(self.level_box, 0, wx.CENTER, 0)
@@ -57,9 +61,11 @@ class OptionsPanel(wx.Panel):
         sizer_vertical.AddSpacer(30)
         sizer_vertical.Add(self.path_text, 0, wx.CENTER, 0)
 
-        self.path = wx.StaticText(self,
-                                  size=(wx.Size.GetWidth(self.Size), 20),
-                                  style=wx.ALIGN_CENTER_HORIZONTAL)
+        self.path = wx.StaticText(
+            self,
+            size=(wx.Size.GetWidth(self.Size), 20),
+            style=wx.ALIGN_CENTER_HORIZONTAL
+        )
         self.path.Label = specs["Value"][2]
         sizer_vertical.AddSpacer(10)
         sizer_vertical.Add(self.path, 0, wx.CENTER, 0)

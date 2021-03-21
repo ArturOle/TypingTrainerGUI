@@ -19,8 +19,7 @@ class PlayPanel(wx.Panel):
             self.parent.switch_panel(self, self.parent.round_panels[self.current_round])
             self.parent.round_panels[self.current_round].round()
         else:
-            self.parent.main_panel.SetClientSize(self.parent.Size)
-            self.parent.main_panel.Show()
+            self.change_to_highscores()
             self.gen_highscore()
             self.current_round = 0
             self.accuracy = []
@@ -35,11 +34,17 @@ class PlayPanel(wx.Panel):
         self.accuracy = sum(self.accuracy)/len(self.accuracy)
         print(self.whole_time)
         print(self.accuracy)
-        self.score = '{0:.2f}'.format((self.parent.specs[1]
-                                       * 100000
-                                       * (pow(self.accuracy, 2))/self.whole_time))
+        self.score = '{0:.2f}'.format((
+            self.parent.specs[1]
+            * 100000
+            * (pow(self.accuracy, 2))/self.whole_time)
+        )
         print(self.score)
         self.to_csv()
+
+    def change_to_highscores(self):
+        self.parent.switch_panel(self.parent.play_panel, self.parent.highscores_panel)
+        self.parent.highscores_panel.SetClientSize(self.parent.Size)
 
     def to_csv(self):
         data = {"date": [str(date.today())],
@@ -50,5 +55,4 @@ class PlayPanel(wx.Panel):
         new_data = pd.DataFrame(data)
         # df = df.append(new_data, ignore_index=True)
         new_data.to_csv("Highscores.csv", mode='a', header=False)
-        new_data.sort_values("score", ascending=False)
-        print(pd.read_csv('Highscores.csv'))
+        print(pd.read_csv('Highscores.csv').sort_values("score", ascending=False))

@@ -69,7 +69,6 @@ class RoundPanel(wx.Panel):
         next_button.Bind(wx.EVT_BUTTON, self.compare)
         next_button.Bind(wx.EVT_BUTTON, self.next_button_on)
 
-
         sizer_vertical.AddSpacer(100)
         self.SetSizer(sizer_vertical)
         self.Layout()
@@ -130,7 +129,7 @@ class RoundPanel(wx.Panel):
 
     def get_random_line(self):
         level = self.parent.specs[2]
-        index = randint(0, self.get_volume(level))
+        index = randint(0, self.get_volume(level)-1)
         try:
             with open(level, "r") as file:
                 for i, line in enumerate(file):

@@ -8,6 +8,7 @@ from OptionsPanel import *
 from PlayPanel import *
 from RoundPanel import *
 from TimerPanel import *
+from HighscoresPanel import *
 
 
 class Frame(wx.Frame):
@@ -37,6 +38,9 @@ class Frame(wx.Frame):
         self.SetInitialSize((640, 480))
         self.main_panel = MainPanel(self)
 
+        self.highscores_panel = HighscoresPanel(self)
+        self.highscores_panel.Hide()
+
         self.timer_panel = TimerPanel(self)
         self.timer_panel.Hide()
 
@@ -55,6 +59,7 @@ class Frame(wx.Frame):
         self.sizer.Add(self.timer_panel, 1, wx.EXPAND, 1)
         self.sizer.Add(self.play_panel, 1, wx.EXPAND, 1)
         self.sizer.Add(self.option_panel, 1, wx.EXPAND, 1)
+        self.sizer.Add(self.highscores_panel,1, wx.EXPAND, 1)
         self.sizer.AddMany(([panel, 1, wx.EXPAND, 1] for panel in self.round_panels))
 
         self.SetSizer(self.sizer)
@@ -63,7 +68,7 @@ class Frame(wx.Frame):
     def switch_panel(from_panel, to_panel):
         if from_panel.IsShown():
             from_panel.Hide()
-            to_panel.Show()
+        to_panel.Show()
 
     def generate_rounds(self):
         rounds = [RoundPanel(self) for panel in range(0, self.specs[1])]

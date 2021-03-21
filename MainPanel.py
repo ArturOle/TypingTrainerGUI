@@ -4,6 +4,7 @@ import pandas as pd
 import time
 import wx
 
+
 class MainPanel(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent=parent)
