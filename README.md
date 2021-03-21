@@ -77,6 +77,9 @@ For now moving to another project, new funtionalities will be added in near futu
     Enter works for commiting answers
     The highscores are sorted
     Auto focusing on text box for every round ( no need for clicking the box )
+    Proper Highscores Panel
+    Optional tasks:
+        - second game mode( translate )
 
 
 
