@@ -24,7 +24,7 @@ class Frame(wx.Frame):
 
     Structure:
 
-                   ===================================================
+                   ================ HighscoresPanel <=================
                   V                                                  |
     Frame => MainPanel-(Play) => TimerPanel => PlayPanel => {RoundPanels}
                   ^   -(Options) => OptionsPanel              ^       |

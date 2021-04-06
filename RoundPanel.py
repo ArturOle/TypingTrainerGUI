@@ -10,6 +10,7 @@ class RoundPanel(wx.Panel):
         super().__init__(parent=parent)
         self.Hide()
         self.parent = parent
+        self.txt_box = None
         self.round_line = 0
         self.user_line = 0
         self.accuracy = 0
@@ -17,10 +18,7 @@ class RoundPanel(wx.Panel):
         self.time_end = 0
 
     def round(self):
-        self.Show()
-        self.SetClientSize(self.parent.Size)
-        self.time_start = time.time()
-        self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
+        self.__init_round()
         sizer_vertical = wx.BoxSizer(wx.VERTICAL)
         sizer_horizontal = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -37,7 +35,7 @@ class RoundPanel(wx.Panel):
 
         font.SetPointSize(20)
         font.MakeBold()
-        self.round_line = self.get_random_line()
+
         round_text = wx.StaticText(
             self,
             label=''.join(("Repeat:\n", self.round_line)),
@@ -73,29 +71,49 @@ class RoundPanel(wx.Panel):
         self.SetSizer(sizer_vertical)
         self.Layout()
 
+    def __init_round(self):
+        self.Show()
+        self.SetClientSize(self.parent.Size)
+        self.time_start = time.time()
+        self.SetOwnBackgroundColour(wx.Colour(60, 60, 60, 0))
+        self.round_line = self.get_random_line()
+
+    def sizer_handler(self):
+        pass
+
     def compare(self, first, second):
         self.time_end = time.time()
         print(first, second)
         self.parent.play_panel.whole_time.append(self.time_end - self.time_start)
-        score = 0
         first = [i for i in first]
         second = [i for i in second]
-        lengfi = len(first)  # length of the first string
-        lengse = len(second)  # length of the second string
 
-        # We need to prevent out of index error by appending blank spaces
-        while lengfi < lengse:
+        score, length_first = self.calc_score(first, second)
+        try:
+            self.accuracy = score / length_first
+            self.parent.play_panel.accuracy.append(self.accuracy)
+            self.write_score()
+        except ZeroDivisionError:
+            print("No phrase")
+            return -1
+
+    @staticmethod
+    def calc_score(first, second):
+        score = 0
+        length_first = len(first)  # length of the first string
+        length_second = len(second)  # length of the second string
+        while length_first < length_second:
             first.append(" ")
-            lengfi = len(first)
+            length_first = len(first)
 
-        while lengse < lengfi:
+        while length_second < length_first:
             second.append(" ")
-            lengse = len(second)
+            length_second = len(second)
 
-        for i, j in zip(range(lengfi), range(lengse)):
+        for i, j in zip(range(length_first), range(length_second)):
             if first[i] == second[j]:
                 score += 1
-            elif i + 1 <= lengse - 1:
+            elif i + 1 <= length_second - 1:
                 if first[i + 1] == second[j]:
                     score += 0.5
                     i += 1
@@ -103,13 +121,7 @@ class RoundPanel(wx.Panel):
                 if first[i - 1] == second[j]:
                     score += (1 / 3)
                     i -= 1
-        try:
-            self.accuracy = score / lengfi
-            self.parent.play_panel.accuracy.append(self.accuracy)
-            self.write_score()
-        except ZeroDivisionError:
-            print("No phrase")
-            return -1
+        return score, length_first
 
     def write_score(self):
         with open("testing_input.txt", "a") as f:
