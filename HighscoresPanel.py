@@ -8,6 +8,7 @@ class HighscoresPanel(wx.Panel):
         self.parent = parent
         self.SetClientSize(self.parent.Size)
         self.v_box = wx.BoxSizer(wx.VERTICAL)
+        self.grid_sizer = wx.GridSizer(6, 4, 3, 5)
 
         self.init_ui()
 
@@ -29,11 +30,21 @@ class HighscoresPanel(wx.Panel):
         top_5 = pd.read_csv('Highscores.csv')\
             .sort_values("score", ascending=False)\
             .head(5)
+        font = wx.Font(10, wx.DECORATIVE, wx.ITALIC, wx.BOLD)
+        self.grid_sizer.AddMany([
+            (wx.StaticText(self, label="Date:"), 0, wx.EXPAND),
+            (wx.StaticText(self, label="Score:"), 0, wx.EXPAND),
+            (wx.StaticText(self, label="Time:"), 0, wx.EXPAND),
+            (wx.StaticText(self, label="Accuracy:"), 0, wx.EXPAND)
+        ])
 
         for row in top_5.values:
-            self.v_box.Add(wx.StaticText(self, label=''.join(str(row[1:]).split(','))[1:-1]), 1, wx.ALIGN_CENTER)
+            for data in list(row)[1:]:
+                data = wx.StaticText(self, label=str(data))
+                data.SetFont(font)
+                self.grid_sizer.Add(data)
 
-
+        self.v_box.Add(self.grid_sizer, proportion=1, flag=wx.EXPAND | wx.CENTER)
 
 
 
