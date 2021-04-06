@@ -8,13 +8,18 @@ My first GUI project and program.
 
 ## Briefly:
 
-Small programming project based on my console implementation of the trainer with 
-graphical user interface made with wxPython library. 
-The main goal of the project was to learn about the graphical user interfaces and 
+Small programming project based on my console 
+implementation of the trainer 
+with graphical user interface made with wxPython library. 
+The main goal of the project was to learn about 
+the graphical user interfaces and 
 improve my problem solving skills.
-I am still improving the project in my spare time by adding new functionalities.
-Currently working on I/O with the MySQL databse and other game modes.
-I am also planing on creating analysis screen where all the progress will be processed.
+I am still improving the project in my spare time
+by adding new functionalities.
+Currently working on I/O with 
+the MySQL databse and other game modes.
+I am also planing on creating analysis screen 
+where all the progress will be processed.
 
 ## Requirements:
 
